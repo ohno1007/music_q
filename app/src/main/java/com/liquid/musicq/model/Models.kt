@@ -10,10 +10,15 @@ data class Song(
     val albumMid: String,
     val durationSec: Int,
     val coverUrl: String,
-    val source: String = "qq"
+    val source: String = "qq",
+    /** Streamable 30s preview (iTunes) or full URL; null when only downloadable. */
+    val previewUrl: String? = null
 ) {
-    val subtitle: String get() = "$artist • $album"
+    val subtitle: String get() = if (album.isBlank()) artist else "$artist • $album"
 }
+
+/** A single time-stamped lyric line parsed from an LRC file. */
+data class LrcLine(val timeMs: Long, val text: String)
 
 /** A locally downloaded track on disk. */
 data class LocalTrack(

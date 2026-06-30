@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.06.00")
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
     implementation(composeBom)
 
     implementation("androidx.core:core-ktx:1.13.1")
@@ -61,9 +61,12 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // Networking for cloud API (QQ Music)
+    // Networking for cloud API (QQ Music / iTunes / lrclib)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.json:json:20240303")
+
+    // Async image loading for cover art
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Media playback
     implementation("androidx.media3:media3-exoplayer:1.3.1")

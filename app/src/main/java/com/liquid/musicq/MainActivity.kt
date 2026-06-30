@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Pause
@@ -39,17 +39,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.liquid.musicq.ui.LibraryScreen
 import com.liquid.musicq.ui.MusicViewModel
+import com.liquid.musicq.ui.NowPlayingOverlay
 import com.liquid.musicq.ui.SearchScreen
 import com.liquid.musicq.ui.SettingsScreen
-import com.liquid.musicq.ui.glass.GlassSurface
-import com.liquid.musicq.ui.glass.LiquidBackground
+import com.liquid.musicq.ui.clickableNoRipple
+import com.liquid.musicq.ui.glass.CoverHaloBackground
+import com.liquid.musicq.ui.glass.GlassBackdropHost
+import com.liquid.musicq.ui.glass.LiquidGlass
 import com.liquid.musicq.ui.theme.LiquidMusicQTheme
 import kotlinx.coroutines.delay
 
@@ -61,9 +67,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         vm.refreshLibrary()
         setContent {
-            LiquidMusicQTheme(darkTheme = true) {
-                AppRoot(vm)
-            }
+            LiquidMusicQTheme(darkTheme = true) { AppRoot(vm) }
         }
     }
 }
@@ -78,9 +82,12 @@ private enum class Tab(val title: String, val icon: ImageVector) {
 private fun AppRoot(vm: MusicViewModel) {
     var tab by remember { mutableStateOf(Tab.Search) }
     val progress by vm.downloadProgress.collectAsState()
-    val current by vm.player.current.collectAsState()
+    val current by vm.player.currentSong.collectAsState()
 
-    LiquidBackground {
+    // the whole UI sits on a cover-halo backdrop captured for glass refraction
+    GlassBackdropHost(
+        background = { CoverHaloBackground(current?.coverUrl) }
+    ) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             Header()
             Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -95,6 +102,9 @@ private fun AppRoot(vm: MusicViewModel) {
             GlassBottomBar(tab) { tab = it }
         }
     }
+
+    // full-screen now-playing slides over everything
+    NowPlayingOverlay(vm)
 }
 
 @Composable
@@ -110,7 +120,7 @@ private fun Header() {
 
 @Composable
 private fun DownloadBanner(label: String, frac: Float) {
-    GlassSurface(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), cornerRadius = 18.dp) {
+    LiquidGlass(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), cornerRadius = 18.dp) {
         Column(Modifier.padding(12.dp)) {
             Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(6.dp))
@@ -126,7 +136,7 @@ private fun DownloadBanner(label: String, frac: Float) {
 
 @Composable
 private fun MiniPlayer(vm: MusicViewModel) {
-    val current by vm.player.current.collectAsState()
+    val current by vm.player.currentSong.collectAsState()
     val isPlaying by vm.player.isPlaying.collectAsState()
     val pos by vm.player.positionMs.collectAsState()
     val dur by vm.player.durationMs.collectAsState()
@@ -135,25 +145,29 @@ private fun MiniPlayer(vm: MusicViewModel) {
         while (true) { vm.player.refreshPosition(); delay(500) }
     }
 
-    GlassSurface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), cornerRadius = 22.dp) {
-        Column(Modifier.padding(12.dp)) {
+    LiquidGlass(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+            .clickable { vm.openNowPlaying() },
+        cornerRadius = 22.dp
+    ) {
+        Column(Modifier.padding(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.size(44.dp).background(MaterialTheme.colorScheme.primary.copy(0.45f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, "toggle",
-                        tint = Color.White,
-                        modifier = Modifier.size(26.dp).clickable { vm.player.toggle() }
+                if (!current?.coverUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = current?.coverUrl, contentDescription = null, contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(44.dp).clip(RoundedCornerShape(10.dp))
                     )
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(current?.song?.title ?: "", color = Color.White, fontWeight = FontWeight.SemiBold, maxLines = 1)
-                    Text(if (current?.enhanced == true) "Enhanced • playing" else "playing",
-                        color = Color.White.copy(0.6f), fontSize = 12.sp)
+                    Text(current?.title ?: "", color = Color.White, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                    Text(current?.artist ?: "", color = Color.White.copy(0.6f), fontSize = 12.sp, maxLines = 1)
                 }
+                Icon(
+                    if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, "toggle",
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp).clickableNoRipple { vm.player.toggle() }
+                )
             }
             Spacer(Modifier.height(8.dp))
             LinearProgressIndicator(
@@ -168,7 +182,7 @@ private fun MiniPlayer(vm: MusicViewModel) {
 
 @Composable
 private fun GlassBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
-    GlassSurface(
+    LiquidGlass(
         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
         cornerRadius = 28.dp
     ) {
@@ -180,7 +194,7 @@ private fun GlassBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
                 val active = t == selected
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onSelect(t) }.padding(horizontal = 8.dp)
+                    modifier = Modifier.clickableNoRipple { onSelect(t) }.padding(horizontal = 8.dp)
                 ) {
                     Icon(
                         t.icon, t.title,

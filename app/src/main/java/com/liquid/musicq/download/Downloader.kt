@@ -1,24 +1,19 @@
 package com.liquid.musicq.download
 
 import android.content.Context
-import com.liquid.musicq.api.QQMusicApi
 import com.liquid.musicq.dsp.AudioBuffer
 import com.liquid.musicq.dsp.AudioEnhancer
 import com.liquid.musicq.dsp.AudioIO
 import com.liquid.musicq.dsp.EnhanceConfig
 import com.liquid.musicq.model.LocalTrack
-import com.liquid.musicq.model.Quality
 import com.liquid.musicq.model.Song
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/** Pulls songs from the cloud to local storage and optionally enhances them. */
-class Downloader(
-    private val context: Context,
-    private val api: QQMusicApi
-) {
+/** Pulls songs from a resolved URL to local storage and optionally enhances them. */
+class Downloader(private val context: Context) {
     private val http = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
@@ -36,21 +31,20 @@ class Downloader(
     }
 
     /**
-     * Resolve URL -> download -> (optionally) enhance. Emits progress via the
-     * callback. Returns the final LocalTrack or null on failure.
+     * Download from an already-resolved [url] -> (optionally) enhance. Emits
+     * progress via the callback. Returns the final LocalTrack or null on failure.
      */
     fun fetch(
         song: Song,
-        quality: Quality,
+        url: String,
         enhance: EnhanceConfig?,
         onProgress: (Progress) -> Unit
     ): LocalTrack? {
-        val url = api.songUrl(song.mid, quality)
-        if (url == null) {
-            onProgress(Progress.Failed("No playable URL (check cookie / VIP / region)"))
-            return null
+        val rawExt = when {
+            url.contains(".flac") -> "flac"
+            url.contains(".m4a") || url.contains("preview") -> "m4a"
+            else -> "mp3"
         }
-        val rawExt = if (url.contains(".flac")) "flac" else "mp3"
         val safe = "${song.title}-${song.artist}".replace(Regex("[^\\w\\u4e00-\\u9fa5-]"), "_")
         val rawFile = File(musicDir, "$safe.$rawExt")
 

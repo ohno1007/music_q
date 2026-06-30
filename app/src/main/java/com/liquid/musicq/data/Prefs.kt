@@ -17,4 +17,9 @@ class Prefs(context: Context) {
     var autoEnhance: Boolean
         get() = sp.getBoolean("autoEnhance", true)
         set(v) { sp.edit().putBoolean("autoEnhance", v).apply() }
+
+    /** When true, search/stream via QQ Music (needs cookie); else iTunes samples. */
+    var useQQ: Boolean
+        get() = sp.getBoolean("useQQ", false)
+        set(v) { sp.edit().putBoolean("useQQ", v).apply() }
 }

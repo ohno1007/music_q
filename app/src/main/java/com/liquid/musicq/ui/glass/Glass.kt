@@ -20,56 +20,93 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Full-screen animated "liquid" backdrop: several soft colour blobs that drift
- * and breathe. The frosted glass panels float on top of this, so the blur and
- * translucency read as Apple-style liquid glass.
+ * Apple-Music-style background: the current album cover blown up and heavily
+ * gaussian-blurred into a soft colour halo, with a slow breathing drift and a
+ * dark vignette so foreground text stays readable. Falls back to animated
+ * colour blobs when there is no cover yet.
  */
 @Composable
-fun LiquidBackground(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val t = rememberInfiniteTransition(label = "bg")
-    val phase by t.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(18000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "phase"
+fun CoverHaloBackground(coverUrl: String?, modifier: Modifier = Modifier) {
+    val t = rememberInfiniteTransition(label = "halo")
+    val drift by t.animateFloat(
+        initialValue = 0f, targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(tween(24000, easing = LinearEasing), RepeatMode.Restart),
+        label = "drift"
+    )
+    val pulse by t.animateFloat(
+        initialValue = 1.35f, targetValue = 1.55f,
+        animationSpec = infiniteRepeatable(tween(12000, easing = LinearEasing), RepeatMode.Reverse),
+        label = "pulse"
     )
 
     Box(modifier.fillMaxSize().background(Color(0xFF07070E))) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .blur(80.dp)
-                .background(blobBrush(phase))
-        )
-        content()
+        if (!coverUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = coverUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = pulse; scaleY = pulse
+                        translationX = 60f * cos(drift)
+                        translationY = 50f * sin(drift)
+                    }
+                    .blur(72.dp)
+            )
+            // colour wash + vignette so the halo glows but text stays legible
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0f to Color(0x3307070E),
+                        0.5f to Color(0x66050509),
+                        1f to Color(0xE6040409)
+                    )
+                )
+            )
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.radialGradient(
+                        colors = listOf(Color.Transparent, Color(0x99000000)),
+                        center = Offset.Unspecified,
+                        radius = 1400f
+                    )
+                )
+            )
+        } else {
+            Box(Modifier.fillMaxSize().blur(80.dp).background(blobBrush(drift)))
+        }
     }
 }
 
 private fun blobBrush(phase: Float): Brush {
-    // three drifting radial gradients combined via a sweep-ish layered brush
-    fun p(cx: Float, cy: Float) = Offset(cx, cy)
-    val c1 = p(0.25f + 0.15f * cos(phase), 0.2f + 0.1f * sin(phase))
+    val cx = 0.25f + 0.15f * cos(phase)
+    val cy = 0.2f + 0.1f * sin(phase)
     return Brush.radialGradient(
         colorStops = arrayOf(
             0f to Color(0xFF7C5CFF).copy(alpha = 0.9f),
             0.5f to Color(0xFF2BD9FE).copy(alpha = 0.5f),
             1f to Color(0xFFFF5DA2).copy(alpha = 0.35f)
         ),
-        center = Offset(1000f * c1.x, 2000f * c1.y),
+        center = Offset(1000f * cx, 2000f * cy),
         radius = 1600f
     )
 }
 
-/** A frosted glass surface: translucent fill, soft inner blur sheen, bright edge. */
+/**
+ * Lightweight translucent panel (no backdrop sampling) for dense list rows
+ * where running a per-item refraction shader would be wasteful. For floating
+ * chrome (nav bar, player, hero buttons) use [LiquidGlass] instead.
+ */
 @Composable
 fun GlassSurface(
     modifier: Modifier = Modifier,
@@ -92,24 +129,18 @@ fun GlassSurface(
             .border(
                 width = 1.dp,
                 brush = Brush.linearGradient(
-                    listOf(
-                        Color.White.copy(alpha = 0.55f),
-                        Color.White.copy(alpha = 0.08f)
-                    )
+                    listOf(Color.White.copy(alpha = 0.45f), Color.White.copy(alpha = 0.08f))
                 ),
                 shape = shape
             )
     ) {
-        // top sheen highlight
         Box(
-            Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.White.copy(alpha = 0.10f),
-                        0.4f to Color.Transparent
-                    )
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    0f to Color.White.copy(alpha = 0.10f),
+                    0.4f to Color.Transparent
                 )
+            )
         )
         Box(Modifier.padding(0.dp)) { content() }
     }

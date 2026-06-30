@@ -12,15 +12,27 @@ track.
 
 ## Features
 
-### Liquid Glass UI (Jetpack Compose)
-- Animated drifting colour-blob backdrop with heavy blur
-- Frosted translucent panels with bright edge highlights & top sheen
-- Glass bottom navigation, mini-player and download banner
+### Liquid Glass UI (Jetpack Compose) — real refraction
+- **Album-cover halo background**: the current artwork blown up, gaussian-
+  blurred and slowly breathing (Apple-Music style).
+- **Genuinely refracting glass** (`LiquidGlass`): each panel captures the
+  backdrop under its own bounds into a shared `GraphicsLayer` and runs an
+  **AGSL runtime shader** (Android 13+) that bends the sample coordinates at the
+  rounded-rect edges (lens/refraction) + a specular rim. Falls back to a real
+  backdrop **blur** on Android 12, and a tasteful translucent tint below that.
+- Glass search bar, list cards, nav bar, mini-player, full-screen now-playing.
+
+### Public music API (works out of the box, no key)
+- **iTunes Search API** — default provider: search any song → high-res cover
+  art + a **30-second streamable preview** you can play immediately.
+- **lrclib.net** — free, open **time-synced lyrics** (LRC). The Now Playing
+  screen highlights and auto-scrolls the current line against playback position.
+- **Cover art** everywhere via Coil.
 
 ### Cloud + local
-- Paste QQ Music cookie in **Settings**
-- Search, pick quality (128k → Hi-Res FLAC), download to app storage
-- Plays local files with ExoPlayer (Media3)
+- Optional **QQ Music** mode (toggle in Settings): paste cookie, search/stream
+  QQ, pick quality (128k → Hi-Res FLAC).
+- Download to app storage; plays local + remote with ExoPlayer (Media3).
 
 ### Audio enhancement DSP (pure Kotlin, `com.liquid.musicq.dsp`)
 Signal flow: **repair → bandwidth → tone → dynamics → space → loudness → dither**

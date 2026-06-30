@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -37,15 +36,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.liquid.musicq.model.LocalTrack
 import com.liquid.musicq.model.Song
-import com.liquid.musicq.ui.glass.GlassSurface
+import com.liquid.musicq.ui.glass.LiquidGlass
 
 @Composable
 fun SearchScreen(vm: MusicViewModel) {
@@ -54,7 +56,7 @@ fun SearchScreen(vm: MusicViewModel) {
     val searching by vm.searching.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        GlassSurface(Modifier.fillMaxWidth(), cornerRadius = 24.dp) {
+        LiquidGlass(Modifier.fillMaxWidth(), cornerRadius = 24.dp) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -65,7 +67,7 @@ fun SearchScreen(vm: MusicViewModel) {
                     value = query,
                     onValueChange = vm::setQuery,
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Search QQ Music…", color = Color.White.copy(0.5f)) },
+                    placeholder = { Text("Songs, artists…", color = Color.White.copy(0.5f)) },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -88,25 +90,43 @@ fun SearchScreen(vm: MusicViewModel) {
                 color = MaterialTheme.colorScheme.secondary
             )
         }
+        if (results.isEmpty() && !searching) {
+            Text("Powered by the public iTunes Search API — search any song to hear a " +
+                "30-second sample, see cover art and synced lyrics. Toggle QQ Music in Settings.",
+                color = Color.White.copy(0.55f), fontSize = 13.sp, modifier = Modifier.padding(8.dp))
+        }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(results) { song -> SongRow(song) { vm.download(song) } }
+            items(results) { song ->
+                SongRow(song, onPlay = { vm.playSong(song); vm.openNowPlaying() }, onDownload = { vm.download(song) })
+            }
         }
     }
 }
 
 @Composable
-private fun SongRow(song: Song, onDownload: () -> Unit) {
-    GlassSurface(Modifier.fillMaxWidth(), cornerRadius = 20.dp, tintAlpha = 0.08f) {
+private fun Cover(url: String, size: Int) {
+    if (url.isBlank()) {
+        Box(
+            Modifier.size(size.dp).clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(0.4f)),
+            contentAlignment = Alignment.Center
+        ) { Icon(Icons.Filled.MusicNote, null, tint = Color.White) }
+    } else {
+        AsyncImage(
+            model = url, contentDescription = null, contentScale = ContentScale.Crop,
+            modifier = Modifier.size(size.dp).clip(RoundedCornerShape(12.dp))
+        )
+    }
+}
+
+@Composable
+private fun SongRow(song: Song, onPlay: () -> Unit, onDownload: () -> Unit) {
+    LiquidGlass(Modifier.fillMaxWidth(), cornerRadius = 20.dp, blur = 18.dp) {
         Row(
-            Modifier.fillMaxWidth().padding(12.dp),
+            Modifier.fillMaxWidth().padding(12.dp).clickable { onPlay() },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                Modifier.size(46.dp).background(
-                    MaterialTheme.colorScheme.primary.copy(0.4f), RoundedCornerShape(12.dp)
-                ),
-                contentAlignment = Alignment.Center
-            ) { Icon(Icons.Filled.MusicNote, null, tint = Color.White) }
+            Cover(song.coverUrl, 48)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(song.title, color = Color.White, fontWeight = FontWeight.SemiBold,
@@ -116,7 +136,7 @@ private fun SongRow(song: Song, onDownload: () -> Unit) {
             }
             Icon(
                 Icons.Filled.Download, "download", tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(26.dp).clickable { onDownload() }
+                modifier = Modifier.size(26.dp).clickableNoRipple { onDownload() }
             )
         }
     }
@@ -125,21 +145,19 @@ private fun SongRow(song: Song, onDownload: () -> Unit) {
 @Composable
 fun LibraryScreen(vm: MusicViewModel) {
     val library by vm.library.collectAsState()
-    val current by vm.player.current.collectAsState()
+    val currentPath by vm.player.currentPath.collectAsState()
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         Text("Library", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(vertical = 12.dp))
         if (library.isEmpty()) {
-            GlassSurface(Modifier.fillMaxWidth()) {
+            LiquidGlass(Modifier.fillMaxWidth()) {
                 Text("No downloads yet. Search and tap ⬇ to pull tracks here.",
                     color = Color.White.copy(0.7f), modifier = Modifier.padding(20.dp))
             }
         }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(library) { track ->
-                LibraryRow(track, playing = current?.filePath == track.filePath) {
-                    vm.player.play(track)
-                }
+                LibraryRow(track, playing = currentPath == track.filePath) { vm.playLocal(track) }
             }
         }
     }
@@ -147,7 +165,7 @@ fun LibraryScreen(vm: MusicViewModel) {
 
 @Composable
 private fun LibraryRow(track: LocalTrack, playing: Boolean, onPlay: () -> Unit) {
-    GlassSurface(Modifier.fillMaxWidth(), cornerRadius = 20.dp, tintAlpha = 0.08f) {
+    LiquidGlass(Modifier.fillMaxWidth(), cornerRadius = 20.dp, blur = 18.dp) {
         Row(
             Modifier.fillMaxWidth().padding(12.dp).clickable { onPlay() },
             verticalAlignment = Alignment.CenterVertically
@@ -158,7 +176,7 @@ private fun LibraryRow(track: LocalTrack, playing: Boolean, onPlay: () -> Unit) 
                 ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = Color.White)
+                Icon(Icons.Filled.PlayArrow, null, tint = if (playing) MaterialTheme.colorScheme.secondary else Color.White)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {

@@ -48,6 +48,11 @@ fun SettingsScreen(vm: MusicViewModel) {
 
         GlassSurface(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
+                toggleRow("Use QQ Music (needs cookie)", vm.prefs.useQQ) { vm.prefs.useQQ = it }
+                Text("Off = search the public iTunes API (covers + 30s previews, no login). " +
+                    "On = search/stream QQ Music using the cookie below.",
+                    color = Color.White.copy(0.6f), fontSize = 12.sp)
+                Spacer(Modifier.height(10.dp))
                 Text("QQ Music cookie", color = Color.White, fontWeight = FontWeight.SemiBold)
                 Text("Paste the cookie from a logged-in y.qq.com browser session. " +
                     "Required for high-quality streams and many downloads.",
