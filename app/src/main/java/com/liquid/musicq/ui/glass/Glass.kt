@@ -61,7 +61,7 @@ fun CoverHaloBackground(coverUrl: String?, modifier: Modifier = Modifier) {
                         translationX = 60f * cos(drift)
                         translationY = 50f * sin(drift)
                     }
-                    .blur(72.dp)
+                    .blur(54.dp)
             )
             // colour wash + vignette so the halo glows but text stays legible
             Box(

@@ -73,8 +73,8 @@ private fun DemoHome() {
     ) {
         Column(Modifier.fillMaxSize().padding(top = 28.dp)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp)) {
-                Text("Liquid", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
-                Text(" MusicQ", color = Color(0xFF2BD9FE), fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Text("液态", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Text("音乐Q", color = Color(0xFF2BD9FE), fontSize = 26.sp, fontWeight = FontWeight.Black)
             }
             Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)) {
                 Column {
@@ -82,7 +82,7 @@ private fun DemoHome() {
                         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.Search, null, tint = Color.White.copy(0.85f))
                             Spacer(Modifier.width(10.dp))
-                            Text("Songs, artists…", color = Color.White.copy(0.55f))
+                            Text("搜索歌曲、歌手…", color = Color.White.copy(0.55f))
                         }
                     }
                     Spacer(Modifier.height(12.dp))
@@ -95,8 +95,8 @@ private fun DemoHome() {
                                 ) { Icon(Icons.Filled.MusicNote, null, tint = Color.White) }
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text("Track ${i + 1}", color = Color.White, fontWeight = FontWeight.SemiBold)
-                                    Text("Artist • Album", color = Color.White.copy(0.6f), fontSize = 13.sp)
+                                    Text("歌曲 ${i + 1}", color = Color.White, fontWeight = FontWeight.SemiBold)
+                                    Text("歌手 • 专辑", color = Color.White.copy(0.6f), fontSize = 13.sp)
                                 }
                             }
                         }
@@ -105,9 +105,9 @@ private fun DemoHome() {
             }
             LiquidGlass(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), cornerRadius = 28.dp) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    NavTab("Search", Icons.Filled.Search, true)
-                    NavTab("Library", Icons.Filled.LibraryMusic, false)
-                    NavTab("Tune", Icons.Filled.Tune, false)
+                    NavTab("搜索", Icons.Filled.Search, true)
+                    NavTab("音乐库", Icons.Filled.LibraryMusic, false)
+                    NavTab("音效", Icons.Filled.Tune, false)
                 }
             }
         }

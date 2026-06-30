@@ -73,9 +73,9 @@ class MainActivity : ComponentActivity() {
 }
 
 private enum class Tab(val title: String, val icon: ImageVector) {
-    Search("Search", Icons.Filled.Search),
-    Library("Library", Icons.Filled.LibraryMusic),
-    Settings("Tune", Icons.Filled.Tune)
+    Search("搜索", Icons.Filled.Search),
+    Library("音乐库", Icons.Filled.LibraryMusic),
+    Settings("音效", Icons.Filled.Tune)
 }
 
 @Composable
@@ -113,8 +113,8 @@ private fun Header() {
         Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Liquid", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
-        Text(" MusicQ", color = MaterialTheme.colorScheme.secondary, fontSize = 26.sp, fontWeight = FontWeight.Black)
+        Text("液态", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
+        Text("音乐Q", color = MaterialTheme.colorScheme.secondary, fontSize = 26.sp, fontWeight = FontWeight.Black)
     }
 }
 

@@ -52,7 +52,7 @@ private const val GLASS_SHADER = """
 uniform shader content;
 uniform float2 size;
 uniform float radius;
-uniform float refraction;
+uniform float strength;
 
 float sdRoundRect(float2 p, float2 b, float r) {
     float2 q = abs(p) - b + r;
@@ -60,27 +60,33 @@ float sdRoundRect(float2 p, float2 b, float r) {
 }
 
 half4 main(float2 coord) {
-    float2 b = size * 0.5;
-    float2 p = coord - b;
-    float d = sdRoundRect(p, b, radius);
+    float2 c = size * 0.5;
+    float2 p = coord - c;
+    float d = sdRoundRect(p, c, radius);          // <0 inside the panel
 
-    // numeric gradient = outward normal of the rounded rect
-    float e = 1.0;
-    float gx = sdRoundRect(p + float2(e, 0.0), b, radius) - sdRoundRect(p - float2(e, 0.0), b, radius);
-    float gy = sdRoundRect(p + float2(0.0, e), b, radius) - sdRoundRect(p - float2(0.0, e), b, radius);
+    // edge factor: ~1 right at the rim, fading to 0 over `radius` px inward
+    float edge = 1.0 - smoothstep(0.0, radius, -d);
+
+    // outward normal of the rounded rect (numeric gradient of the SDF)
+    float e = 1.5;
+    float gx = sdRoundRect(p + float2(e, 0.0), c, radius) - sdRoundRect(p - float2(e, 0.0), c, radius);
+    float gy = sdRoundRect(p + float2(0.0, e), c, radius) - sdRoundRect(p - float2(0.0, e), c, radius);
     float2 n = normalize(float2(gx, gy) + float2(1e-6));
 
-    // displacement is strongest right at the edge and fades over ~36px inward
-    float band = 1.0 - smoothstep(0.0, 36.0, -d);
-    float2 sampleCoord = coord - n * band * refraction;
-    half4 col = content.eval(sampleCoord);
+    // 1) strong edge refraction: bend the sample inward along the normal at the rim
+    float2 edgeDisp = n * (edge * edge) * strength;
+    // 2) gentle interior magnification: pull samples toward the centre (lens bulge)
+    float2 magDisp = (p / max(c.x, c.y)) * (1.0 - edge) * strength * 0.6;
 
-    // glassy specular rim
-    float rim = smoothstep(0.0, 4.0, -d) - smoothstep(4.0, 12.0, -d);
-    col.rgb += half3(rim * 0.30);
+    float2 sc = coord - edgeDisp - magDisp;
+    half4 col = content.eval(sc);
 
-    // gentle inner darkening toward the edge for depth
-    col.rgb -= half3(band * 0.04);
+    // bright specular rim + soft top sheen sell the glass
+    float rim = smoothstep(0.0, 3.0, -d) - smoothstep(3.0, 11.0, -d);
+    col.rgb += half3(rim) * 0.40;
+    float sheen = (1.0 - smoothstep(0.0, size.y * 0.45, coord.y)) * 0.10;
+    col.rgb += half3(sheen);
+    col.rgb -= half3(edge) * 0.04;
     return col;
 }
 """
@@ -98,7 +104,7 @@ private fun buildGlassEffect(
         val shader = RuntimeShader(GLASS_SHADER).apply {
             setFloatUniform("size", widthPx, heightPx)
             setFloatUniform("radius", radiusPx)
-            setFloatUniform("refraction", refractionPx)
+            setFloatUniform("strength", refractionPx)
         }
         val refract = RenderEffect.createRuntimeShaderEffect(shader, "content")
         // inner (blur) runs first, then the refraction shader samples the blurred result
@@ -118,9 +124,9 @@ private fun buildGlassEffect(
 fun LiquidGlass(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 28.dp,
-    blur: Dp = 24.dp,
-    refraction: Dp = 22.dp,
-    tint: Color = Color.White.copy(alpha = 0.10f),
+    blur: Dp = 8.dp,
+    refraction: Dp = 34.dp,
+    tint: Color = Color.White.copy(alpha = 0.08f),
     content: @Composable () -> Unit
 ) {
     val shape = RoundedCornerShape(cornerRadius)

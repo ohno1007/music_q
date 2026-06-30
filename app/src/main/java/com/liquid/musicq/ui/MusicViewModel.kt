@@ -70,9 +70,9 @@ class MusicViewModel(app: Application) : AndroidViewModel(app) {
                     if (prefs.useQQ && prefs.cookie.isNotBlank()) qq.search(q) else itunes.search(q)
                 }
                 _results.value = r
-                if (r.isEmpty()) _status.value = "No results"
+                if (r.isEmpty()) _status.value = "没有结果"
             } catch (t: Throwable) {
-                _status.value = "Search failed: ${t.message}"
+                _status.value = "搜索失败:${t.message}"
             } finally {
                 _searching.value = false
             }
@@ -84,7 +84,7 @@ class MusicViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val playable = withContext(Dispatchers.IO) { resolvePlayUrl(song) }
             if (playable == null) {
-                _status.value = "Can't stream (preview unavailable / cookie required)"
+                _status.value = "无法播放(试听不可用 / 需要 Cookie)"
                 return@launch
             }
             player.playRemote(song.copy(previewUrl = playable))
@@ -117,18 +117,18 @@ class MusicViewModel(app: Application) : AndroidViewModel(app) {
             withContext(Dispatchers.IO) {
                 val url = resolvePlayUrl(song)
                 if (url == null) {
-                    _status.value = "No downloadable URL"
+                    _status.value = "没有可下载的链接"
                     return@withContext
                 }
                 downloader.fetch(song, url, config) { p ->
                     when (p) {
                         is Downloader.Progress.Downloading ->
-                            _downloadProgress.value = "Downloading ${song.title}" to p.fraction
+                            _downloadProgress.value = "正在下载 ${song.title}" to p.fraction
                         is Downloader.Progress.Enhancing ->
-                            _downloadProgress.value = "Enhancing ${song.title}" to p.fraction
+                            _downloadProgress.value = "正在增强 ${song.title}" to p.fraction
                         is Downloader.Progress.Done -> {
                             _downloadProgress.value = null
-                            _status.value = "Saved: ${p.track.song.title}"
+                            _status.value = "已保存:${p.track.song.title}"
                             refreshLibrary()
                         }
                         is Downloader.Progress.Failed -> {

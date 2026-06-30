@@ -67,7 +67,7 @@ fun SearchScreen(vm: MusicViewModel) {
                     value = query,
                     onValueChange = vm::setQuery,
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Songs, artists…", color = Color.White.copy(0.5f)) },
+                    placeholder = { Text("搜索歌曲、歌手…", color = Color.White.copy(0.5f)) },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -91,8 +91,8 @@ fun SearchScreen(vm: MusicViewModel) {
             )
         }
         if (results.isEmpty() && !searching) {
-            Text("Powered by the public iTunes Search API — search any song to hear a " +
-                "30-second sample, see cover art and synced lyrics. Toggle QQ Music in Settings.",
+            Text("由公开的 iTunes 接口提供:搜索任意歌曲即可试听 30 秒、查看封面与同步歌词。" +
+                "可在「音效」页里切换为 QQ 音乐。",
                 color = Color.White.copy(0.55f), fontSize = 13.sp, modifier = Modifier.padding(8.dp))
         }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -147,11 +147,11 @@ fun LibraryScreen(vm: MusicViewModel) {
     val library by vm.library.collectAsState()
     val currentPath by vm.player.currentPath.collectAsState()
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        Text("Library", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold,
+        Text("音乐库", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(vertical = 12.dp))
         if (library.isEmpty()) {
             LiquidGlass(Modifier.fillMaxWidth()) {
-                Text("No downloads yet. Search and tap ⬇ to pull tracks here.",
+                Text("还没有下载。搜索后点 ⬇ 把歌曲拉到这里。",
                     color = Color.White.copy(0.7f), modifier = Modifier.padding(20.dp))
             }
         }
@@ -188,7 +188,7 @@ private fun LibraryRow(track: LocalTrack, playing: Boolean, onPlay: () -> Unit) 
                         Spacer(Modifier.width(8.dp))
                         Icon(Icons.Filled.GraphicEq, null, tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(16.dp))
-                        Text(" enhanced", color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp)
+                        Text(" 已增强", color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp)
                     }
                 }
             }

@@ -30,8 +30,8 @@ data class LocalTrack(
 
 /** Audio quality tiers offered by QQ Music. */
 enum class Quality(val label: String, val fileType: String, val bitrate: String) {
-    STANDARD("Standard 128k", "M500", "128kbps MP3"),
-    HIGH("High 320k", "M800", "320kbps MP3"),
-    FLAC("Lossless FLAC", "F000", "FLAC"),
+    STANDARD("标准 128k", "M500", "128kbps MP3"),
+    HIGH("高品质 320k", "M800", "320kbps MP3"),
+    FLAC("无损 FLAC", "F000", "FLAC"),
     HIRES("Hi-Res 24bit", "RS01", "Hi-Res FLAC")
 }

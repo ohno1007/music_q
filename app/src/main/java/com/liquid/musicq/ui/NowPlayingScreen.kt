@@ -95,7 +95,7 @@ private fun NowPlayingScreen(vm: MusicViewModel) {
                 Spacer(Modifier.weight(1f))
                 if (isPreview) {
                     LiquidGlass(cornerRadius = 14.dp) {
-                        Text("PREVIEW 30s", color = Color.White, fontSize = 11.sp,
+                        Text("试听 30 秒", color = Color.White, fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
                     }
@@ -159,7 +159,7 @@ private fun LyricsView(
 ) {
     if (lyrics.isEmpty()) {
         Box(modifier, contentAlignment = Alignment.Center) {
-            Text("Lyrics will appear here", color = Color.White.copy(0.4f), fontSize = 14.sp)
+            Text("歌词将显示在这里", color = Color.White.copy(0.4f), fontSize = 14.sp)
         }
         return
     }

@@ -43,19 +43,19 @@ fun SettingsScreen(vm: MusicViewModel) {
         Modifier.fillMaxSize().verticalScroll(scroll).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Cloud & Cookie", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold,
+        Text("云端与 Cookie", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 12.dp))
 
         GlassSurface(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
-                toggleRow("Use QQ Music (needs cookie)", vm.prefs.useQQ) { vm.prefs.useQQ = it }
-                Text("Off = search the public iTunes API (covers + 30s previews, no login). " +
-                    "On = search/stream QQ Music using the cookie below.",
+                toggleRow("使用 QQ 音乐(需要 Cookie)", vm.prefs.useQQ) { vm.prefs.useQQ = it }
+                Text("关闭 = 使用公开 iTunes 接口(封面 + 30 秒试听,无需登录);" +
+                    "开启 = 用下方 Cookie 搜索并播放 QQ 音乐。",
                     color = Color.White.copy(0.6f), fontSize = 12.sp)
                 Spacer(Modifier.height(10.dp))
-                Text("QQ Music cookie", color = Color.White, fontWeight = FontWeight.SemiBold)
-                Text("Paste the cookie from a logged-in y.qq.com browser session. " +
-                    "Required for high-quality streams and many downloads.",
+                Text("QQ 音乐 Cookie", color = Color.White, fontWeight = FontWeight.SemiBold)
+                Text("从已登录 y.qq.com 的浏览器中复制 Cookie 粘贴到这里。" +
+                    "高音质和多数下载都需要它。",
                     color = Color.White.copy(0.6f), fontSize = 12.sp)
                 Spacer(Modifier.height(8.dp))
                 TextField(
@@ -73,41 +73,41 @@ fun SettingsScreen(vm: MusicViewModel) {
 
         QualityPicker(vm)
 
-        Text("Audio Enhancement", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("音频增强", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
 
         GlassSurface(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                toggleRow("Auto-enhance on download", vm.prefs.autoEnhance) { vm.prefs.autoEnhance = it }
+                toggleRow("下载时自动增强", vm.prefs.autoEnhance) { vm.prefs.autoEnhance = it }
 
-                section("Bandwidth extension")
-                toggleRow("Harmonic exciter", cfg.harmonicExciter) { update(vm) { harmonicExciter = it } }
-                sliderRow("  Exciter amount", cfg.exciterAmount) { update(vm) { exciterAmount = it } }
-                toggleRow("SBR (spectral band replication)", cfg.spectralBandReplication) {
+                section("频带扩展")
+                toggleRow("谐波激励", cfg.harmonicExciter) { update(vm) { harmonicExciter = it } }
+                sliderRow("  激励强度", cfg.exciterAmount) { update(vm) { exciterAmount = it } }
+                toggleRow("SBR(频谱带宽复制)", cfg.spectralBandReplication) {
                     update(vm) { spectralBandReplication = it }
                 }
-                toggleRow("Neural super-res (needs model)", cfg.neuralSuperRes) { update(vm) { neuralSuperRes = it } }
+                toggleRow("神经网络超分(需模型)", cfg.neuralSuperRes) { update(vm) { neuralSuperRes = it } }
 
-                section("Repair")
-                toggleRow("Spectral denoise", cfg.spectralDenoise) { update(vm) { spectralDenoise = it } }
-                sliderRow("  Denoise strength", cfg.denoiseStrength) { update(vm) { denoiseStrength = it } }
-                toggleRow("De-click / de-crackle", cfg.deClick) { update(vm) { deClick = it } }
+                section("修复")
+                toggleRow("频谱降噪", cfg.spectralDenoise) { update(vm) { spectralDenoise = it } }
+                sliderRow("  降噪强度", cfg.denoiseStrength) { update(vm) { denoiseStrength = it } }
+                toggleRow("去咔哒 / 去爆音", cfg.deClick) { update(vm) { deClick = it } }
 
-                section("Tone")
-                toggleRow("Parametric EQ", cfg.parametricEq) { update(vm) { parametricEq = it } }
-                toggleRow("Virtual bass (psychoacoustic)", cfg.virtualBass) { update(vm) { virtualBass = it } }
+                section("音色")
+                toggleRow("参数均衡器", cfg.parametricEq) { update(vm) { parametricEq = it } }
+                toggleRow("虚拟低音(心理声学)", cfg.virtualBass) { update(vm) { virtualBass = it } }
 
-                section("Dynamics & loudness")
-                toggleRow("Multiband compressor", cfg.multibandCompressor) { update(vm) { multibandCompressor = it } }
-                sliderRow("  Compression amount", cfg.compAmount) { update(vm) { compAmount = it } }
-                toggleRow("Loudness normalize (R128 / LUFS)", cfg.loudnessNormalize) {
+                section("动态与响度")
+                toggleRow("多段压缩", cfg.multibandCompressor) { update(vm) { multibandCompressor = it } }
+                sliderRow("  压缩强度", cfg.compAmount) { update(vm) { compAmount = it } }
+                toggleRow("响度归一化(R128 / LUFS)", cfg.loudnessNormalize) {
                     update(vm) { loudnessNormalize = it }
                 }
-                toggleRow("Brick-wall limiter", cfg.limiter) { update(vm) { limiter = it } }
+                toggleRow("砖墙限幅器", cfg.limiter) { update(vm) { limiter = it } }
 
-                section("Stereo & output")
-                toggleRow("Stereo widening", cfg.stereoWiden) { update(vm) { stereoWiden = it } }
-                toggleRow("Haas effect", cfg.haasEffect) { update(vm) { haasEffect = it } }
-                toggleRow("TPDF dithering", cfg.dither) { update(vm) { dither = it } }
+                section("立体声与输出")
+                toggleRow("立体声扩展", cfg.stereoWiden) { update(vm) { stereoWiden = it } }
+                toggleRow("哈斯效应", cfg.haasEffect) { update(vm) { haasEffect = it } }
+                toggleRow("TPDF 抖动", cfg.dither) { update(vm) { dither = it } }
             }
         }
         Spacer(Modifier.height(120.dp))
@@ -119,7 +119,7 @@ private fun QualityPicker(vm: MusicViewModel) {
     var sel by remember { mutableStateOf(vm.prefs.qualityOrdinal) }
     GlassSurface(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Download quality", color = Color.White, fontWeight = FontWeight.SemiBold)
+            Text("下载音质", color = Color.White, fontWeight = FontWeight.SemiBold)
             Quality.values().forEachIndexed { i, q ->
                 Row(
                     Modifier.fillMaxWidth().padding(vertical = 6.dp),

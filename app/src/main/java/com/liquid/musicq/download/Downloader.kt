@@ -69,7 +69,7 @@ class Downloader(private val context: Context) {
                 }
             }
         } catch (t: Throwable) {
-            onProgress(Progress.Failed("Download error: ${t.message}"))
+            onProgress(Progress.Failed("下载出错:${t.message}"))
             return null
         }
 
@@ -91,7 +91,7 @@ class Downloader(private val context: Context) {
             onProgress(Progress.Done(track))
             track
         } catch (t: Throwable) {
-            onProgress(Progress.Failed("Enhance error: ${t.message}"))
+            onProgress(Progress.Failed("增强出错:${t.message}"))
             // still return the raw download so the user keeps the file
             LocalTrack(song, rawFile.absolutePath, rawFile.length(), enhanced = false)
         }
