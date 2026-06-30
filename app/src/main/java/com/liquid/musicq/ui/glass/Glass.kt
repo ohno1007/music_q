@@ -135,13 +135,13 @@ fun GlassSurface(
             )
     ) {
         Box(
-            Modifier.fillMaxSize().background(
+            Modifier.matchParentSize().background(
                 Brush.verticalGradient(
                     0f to Color.White.copy(alpha = 0.10f),
                     0.4f to Color.Transparent
                 )
             )
         )
-        Box(Modifier.padding(0.dp)) { content() }
+        content()
     }
 }

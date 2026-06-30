@@ -144,7 +144,7 @@ fun LiquidGlass(
             val refrPx = with(density) { refraction.toPx() }
             Box(
                 Modifier
-                    .fillMaxSize()
+                    .matchParentSize()
                     .graphicsLayer {
                         clip = true
                         this.shape = shape
@@ -171,7 +171,7 @@ fun LiquidGlass(
         // --- frost tint + sheen + bright edge ---
         Box(
             Modifier
-                .fillMaxSize()
+                .matchParentSize()
                 .background(tint)
                 .background(
                     Brush.verticalGradient(
